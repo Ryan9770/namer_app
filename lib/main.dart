@@ -1,6 +1,7 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http; // HTTP 패키지 임포트
 
 void main() {
   runApp(MyApp());
@@ -64,6 +65,9 @@ class _MyHomePageState extends State<MyHomePage> {
       case 1:
         page = FavoritesPage();
         break;
+      case 2:
+        page = SearchsPage();
+        break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
@@ -83,6 +87,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   NavigationRailDestination(
                     icon: Icon(Icons.favorite),
                     label: Text('Favorites'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.search),
+                    label: Text('Search'),
                   ),
                 ],
                 selectedIndex: selectedIndex,
@@ -174,6 +182,29 @@ class FavoritesPage extends StatelessWidget {
             title: Text(pair.asLowerCase),
           ),
       ],
+    );
+  }
+}
+
+class SearchsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(child: AppBar()),
+          AppBar(
+            backgroundColor: Color.fromARGB(255, 255, 255, 255),
+            title: Container(
+              child: TextField(),
+            ),
+            actions: [TextButton(onPressed: () {}, child: Text('Search'))],
+          )
+        ],
+      ),
     );
   }
 }
