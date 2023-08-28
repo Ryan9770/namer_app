@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http; // HTTP 패키지 임포트
+import 'package:webview_flutter/webview_flutter.dart'; // webview_flutter 임포트
 
 void main() {
   runApp(MyApp());
@@ -66,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = FavoritesPage();
         break;
       case 2:
-        page = SearchsPage();
+        page = SearchPage();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
@@ -186,24 +190,61 @@ class FavoritesPage extends StatelessWidget {
   }
 }
 
-class SearchsPage extends StatelessWidget {
+class SearchPage extends StatefulWidget {
+  @override
+  _SearchPageState createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  String searchResult = ''; // 검색 결과를 저장할 변수
+
+  void fetchSearchResults(String query) async {
+    // 검색 결과를 가져오는 로직
+    final response =
+        await http.get(Uri.parse('https://www.google.com/search?q=$query'));
+    if (response.statusCode == 200) {
+      setState(() {
+        searchResult = response.body; // 검색 결과를 변수에 저장하고 화면을 업데이트
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(child: AppBar()),
-          AppBar(
-            backgroundColor: Color.fromARGB(255, 255, 255, 255),
-            title: Container(
-              child: TextField(),
-            ),
-            actions: [TextButton(onPressed: () {}, child: Text('Search'))],
-          )
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        title: Container(
+          child: TextField(
+            onSubmitted: (value) {
+              fetchSearchResults(value); // 검색어를 제출하면 검색 결과 가져오기
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              fetchSearchResults(searchResult); // 검색 버튼을 누르면 검색 결과 가져오기
+            },
+            child: Text('Search'),
+          ),
         ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: WebView(
+                initialUrl: Uri.dataFromString(
+                  searchResult,
+                  mimeType: 'text/html',
+                  encoding: Encoding.getByName('utf-8'),
+                ).toString(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
